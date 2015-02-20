@@ -7,6 +7,6 @@ namespace ModelBindingWebSite.Models
 {
     public class UserWithAddress
     {
-        public List<Address2> Addresses { get; set; }
+        public List<PersonAddress> Addresses { get; set; }
     }
 }

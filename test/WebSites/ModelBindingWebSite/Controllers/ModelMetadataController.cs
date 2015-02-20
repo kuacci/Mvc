@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using ModelBindingWebSite.Models;
-using ModelBindingWebSite.ViewModels;
 
 namespace ModelBindingWebSite.Controllers
 {

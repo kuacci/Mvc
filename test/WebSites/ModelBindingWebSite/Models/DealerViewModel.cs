@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace ModelBindingWebSite.ViewModels
+namespace ModelBindingWebSite.Models
 {
     public class DealerViewModel
     {

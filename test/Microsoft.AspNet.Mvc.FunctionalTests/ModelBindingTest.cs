@@ -11,12 +11,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.TestHost;
-using ModelBindingWebSite;
 using ModelBindingWebSite.Models;
-using ModelBindingWebSite.ViewModels;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -1859,15 +1855,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 { "AddressLines[1].Line", "Street Address 1" },
                 { "ZipCode", "98052" },
             };
-            var url = "http://localhost/BindModel/CollectionType";
+            var url = "http://localhost/Person_CollectionBinder/CollectionType";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PutAsync(url, formData);
 
             // Assert
-            var address = JsonConvert.DeserializeObject<Address2>(
-                                await response.Content.ReadAsStringAsync());
+            var address = await ReadValue<PersonAddress>(response);
             Assert.Equal(2, address.AddressLines.Count);
             Assert.Equal("Street Address 0", address.AddressLines[0].Line);
             Assert.Equal("Street Address 1", address.AddressLines[1].Line);
@@ -1887,15 +1882,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 new KeyValuePair<string, string>("AddressLines[3].Line", "Street Address 0"),
                 new KeyValuePair<string, string>("AddressLines[10000].Line", "Street Address 1"),
             };
-            var url = "http://localhost/BindModel/CollectionType";
+            var url = "http://localhost/Person_CollectionBinder/CollectionType";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PutAsync(url, formData);
 
             // Assert
-            var address = JsonConvert.DeserializeObject<Address2>(
-                                await response.Content.ReadAsStringAsync());
+            var address = await ReadValue<PersonAddress>(response);
             Assert.Equal(2, address.AddressLines.Count);
             Assert.Equal("Street Address 0", address.AddressLines[0].Line);
             Assert.Equal("Street Address 1", address.AddressLines[1].Line);
@@ -1915,15 +1909,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 { "Addresses[1].AddressLines[0].Line", "Street Address 10" },
                 { "Addresses[1].AddressLines[3].Line", "Street Address 13" },
             };
-            var url = "http://localhost/BindModel/NestedCollectionType";
+            var url = "http://localhost/Person_CollectionBinder/NestedCollectionType";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PostAsync(url, formData);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<UserWithAddress>(
-                                await response.Content.ReadAsStringAsync());
+            var result = await ReadValue<UserWithAddress>(response);
             Assert.Equal(2, result.Addresses.Count);
             var address = result.Addresses[0];
             Assert.Equal(2, address.AddressLines.Count);
@@ -1947,15 +1940,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 { "Addresses", "Street Address 00" },
             };
-            var url = "http://localhost/BindModel/NestedCollectionType";
+            var url = "http://localhost/Person_CollectionBinder/NestedCollectionType";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PostAsync(url, formData);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<UserWithAddress>(
-                                await response.Content.ReadAsStringAsync());
+            var result = await ReadValue<UserWithAddress>(response);
             var address = Assert.Single(result.Addresses);
             Assert.Null(address.AddressLines);
             Assert.Null(address.ZipCode);
@@ -1975,15 +1967,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 { "People[2].Parent", "Person 2 Parent" },
                 { "People[1000].Name", "Person 1000 Parent" },
             };
-            var url = "http://localhost/BindModel/NestedCollectionOfRecursiveTypes";
+            var url = "http://localhost/Person_CollectionBinder/NestedCollectionOfRecursiveTypes";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PostAsync(url, formData);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<PeopleModel>(
-                                await response.Content.ReadAsStringAsync());
+            var result = await ReadValue<PeopleModel>(response);
             Assert.Equal(3, result.People.Count);
             var person = result.People[0];
 
@@ -2010,51 +2001,49 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 { "People", "Person 0" },
             };
-            var url = "http://localhost/BindModel/NestedCollectionOfRecursiveTypes";
+            var url = "http://localhost/Person_CollectionBinder/NestedCollectionOfRecursiveTypes";
             var formData = new FormUrlEncodedContent(content);
 
             // Act
             var response = await client.PostAsync(url, formData);
 
             // Assert
-            var result = JsonConvert.DeserializeObject<PeopleModel>(
-                                await response.Content.ReadAsStringAsync());
+            var result = await ReadValue<PeopleModel>(response);
             var person = Assert.Single(result.People);
             Assert.Null(person.Name);
             Assert.Null(person.Parent);
         }
 
-        [Fact]
-        public async Task BindModelAsync_MultipleCheckBoxesWithSameKey_BindsFirstValue()
+        [Theory]
+        [InlineData("true", "false", true)]
+        [InlineData("false", "true", false)]
+        public async Task BindModelAsync_MultipleCheckBoxesWithSameKey_BindsFirstValue(string firstValue,
+                                                                                       string secondValue,
+                                                                                       bool expectedResult)
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
-            var content1 = new List<KeyValuePair<string, string>>
+            var content = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string,string>("isValid", "true"),
-                new KeyValuePair<string,string>("isValid", "false"),
+                new KeyValuePair<string,string>("isValid", firstValue),
+                new KeyValuePair<string,string>("isValid", secondValue),
             };
-            var content2 = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("isValid", "false"),
-                new KeyValuePair<string,string>("isValid", "true"),
-            };
-            var url = "http://localhost/BindModel/PostCheckBox";
-            var formData1 = new FormUrlEncodedContent(content1);
-            var formData2 = new FormUrlEncodedContent(content2);
+            var url = "http://localhost/Person_CollectionBinder/PostCheckBox";
+            var formData = new FormUrlEncodedContent(content);
 
             // Act
-            var response1 = await client.PostAsync(url, formData1);
-            var response2 = await client.PostAsync(url, formData2);
+            var response = await client.PostAsync(url, formData);
 
             // Assert
-            var result1 = JsonConvert.DeserializeObject<bool>(
-                                await response1.Content.ReadAsStringAsync());
-            Assert.True(result1);
-            var result2 = JsonConvert.DeserializeObject<bool>(
-                                await response2.Content.ReadAsStringAsync());
-            Assert.False(result2);
+            var result = await ReadValue<bool>(response);
+            Assert.Equal(expectedResult, result);
+        }
+
+        private async Task<TVal> ReadValue<TVal>(HttpResponseMessage response)
+        {
+            Assert.True(response.IsSuccessStatusCode);
+            return JsonConvert.DeserializeObject<TVal>(await response.Content.ReadAsStringAsync());
         }
     }
 }

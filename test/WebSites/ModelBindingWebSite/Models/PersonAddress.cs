@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ModelBindingWebSite.Models
 {
-    public class Address2
+    public class PersonAddress
     {
         public List<StreetAddress> AddressLines { get; set; }
 

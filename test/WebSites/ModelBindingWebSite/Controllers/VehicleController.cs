@@ -7,8 +7,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.WebUtilities;
+using ModelBindingWebSite.Models;
 using ModelBindingWebSite.Services;
-using ModelBindingWebSite.ViewModels;
 
 namespace ModelBindingWebSite
 {

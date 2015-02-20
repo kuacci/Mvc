@@ -6,9 +6,9 @@ using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {
-    public class BindModelController : Controller
+    public class Person_CollectionBinderController : Controller
     {
-        public Address2 CollectionType(Address2 address)
+        public PersonAddress CollectionType(PersonAddress address)
         {
             return address;
         }
