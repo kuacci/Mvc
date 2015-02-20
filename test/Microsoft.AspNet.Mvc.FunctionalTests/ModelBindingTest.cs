@@ -2040,6 +2040,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedResult, result);
         }
 
+        [Fact]
+        public async Task BindModelAsync_CheckBoxesList_BindSuccessful()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("userPreferences[0].Id", "1"),
+                new KeyValuePair<string,string>("userPreferences[0].Checked", "true"),
+                new KeyValuePair<string,string>("userPreferences[1].Id", "2"),
+                new KeyValuePair<string,string>("userPreferences[1].Checked", "false"),
+            };
+            var url = "http://localhost/Person_CollectionBinder/PostCheckBoxList";
+            var formData = new FormUrlEncodedContent(content);
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            var result = await ReadValue<List<UserPreference>>(response);
+            Assert.True(result[0].Checked);
+            Assert.False(result[1].Checked);
+        }
+
         private async Task<TVal> ReadValue<TVal>(HttpResponseMessage response)
         {
             Assert.True(response.IsSuccessStatusCode);
