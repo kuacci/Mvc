@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc;
 using ModelBindingWebSite.Services;
 
-namespace ModelBindingWebSite.Models
+namespace ModelBindingWebSite.ViewModels
 {
     public class VehicleWithDealerViewModel : IValidatableObject
     {

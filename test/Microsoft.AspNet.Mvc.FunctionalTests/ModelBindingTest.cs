@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite.Models;
+using ModelBindingWebSite.ViewModels;
 using Newtonsoft.Json;
 using Xunit;
 

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace ModelBindingWebSite.Models
+namespace ModelBindingWebSite.ViewModels
 {
     public class VehicleViewModel : IValidatableObject
     {
